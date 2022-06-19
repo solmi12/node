@@ -5,8 +5,61 @@ const details = require ("./app/models/details.json");
 const nodemailer = require("nodemailer");
 
 
+let socketIO = require('socket.io');
+
+
+
 
 const app = express();
+const http = require('http').createServer(app);
+
+const io = require('socket.io')(http, {
+  cors: {
+      origin: '*'
+  }
+});
+let userList = new Map();
+
+io.on('connection', (socket) => {
+  let userName = socket.handshake.query.userName;
+  addUser(userName, socket.id);
+
+  socket.broadcast.emit('user-list', [...userList.keys()]);
+  socket.emit('user-list', [...userList.keys()]);
+
+  socket.on('message', (msg) => {
+      socket.broadcast.emit('message-broadcast', {message: msg, userName: userName});
+  })
+
+  socket.on('disconnect', (reason) => {
+      removeUser(userName, socket.id);
+  })
+});
+
+function addUser(userName, id) {
+  if (!userList.has(userName)) {
+      userList.set(userName, new Set(id));
+  } else {
+      userList.get(userName).add(id);
+  }
+}
+
+function removeUser(userName, id) {
+  if (userList.has(userName)) {
+      let userIds = userList.get(userName);
+      if (userIds.size == 0) {
+          userList.delete(userName);
+      }
+  }
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -23,6 +76,8 @@ app.use(express.urlencoded({ extended: true }));
 const db = require("./app/models");
 const { reunion } = require("./app/models");
 const Role = db.role;
+
+
 
 db.mongoose
   .connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
@@ -48,11 +103,12 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/reunion.routes")(app)
 
-
+    
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
 
 function initial() {
   Role.estimatedDocumentCount((err, count) => {
@@ -93,13 +149,15 @@ function initial() {
 app.post("/sendmail", (req, res) => {
   console.log("request came");
   let user = req.body;
-  sendMail(user, info => {
+  let lien = req.url;
+  sendMail(user,lien, info => {
     console.log(`The mail has beed send 😃 and the id is ${info.messageId}`);
     res.send(info);
   });
 });
-async function sendMail(user, callback) {
-
+async function sendMail(user,lien, callback) {
+  
+  
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     host: "smtp.gmail.com",
@@ -121,7 +179,9 @@ async function sendMail(user, callback) {
     to: user.email,
     subject: "rejoindre reunion", 
     html: `<h1>Hi ${user.name}</h1><br>
-    <h4>Thanks for joining us</h4>`
+    <h4>Thanks for joining us</h4>
+    <a>${user.lien}</a>`
+    
     
   };
 
@@ -129,6 +189,8 @@ async function sendMail(user, callback) {
   let info = await transporter.sendMail(mailOptions);
 
   callback(info);
-  
+
  
-}
+ 
+};
+

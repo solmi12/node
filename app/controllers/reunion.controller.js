@@ -1,5 +1,14 @@
 const db = require("../models");
+var mongoClient = require ('mongodb').MongoClient; 
 const Reunion = db.reunion;
+let express = require('express');
+let app = express();
+
+let http = require('http');
+let server = http.Server(app);
+
+let socketIO = require('socket.io');
+let io = socketIO(server);
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
   // Validate request
@@ -57,7 +66,20 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving Tutorial with id=" + id });
     });
 };
-// Update a Tutorial by the id in the request
+exports.findOnee = (req, res) => {
+  const rName= req.params.rName;
+  Reunion.findByRName(rName)
+    .then(data => {
+      if (!data)
+        res.status(404).send({ message: "Not found Reunion with rName " + rName});
+      else res.send(data);
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .send({ message: "Error retrieving Tutorial with id=" + rName });
+    });
+};
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
@@ -115,3 +137,13 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+io.on('connection', (socket) => {
+  socket.on('join', (data) => {
+      socket.join(data.room);
+      socket.broadcast.to(data.room).emit('user joined');
+  });
+
+  socket.on('message', (data) => {
+      io.in(data.room).emit('new message', {user: data.user, message: data.message});
+  });
+});
