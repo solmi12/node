@@ -137,13 +137,16 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
-io.on('connection', (socket) => {
-  socket.on('join', (data) => {
-      socket.join(data.room);
-      socket.broadcast.to(data.room).emit('user joined');
-  });
 
-  socket.on('message', (data) => {
-      io.in(data.room).emit('new message', {user: data.user, message: data.message});
-  });
-});
+exports.get = async (req,resp)=>{
+
+  let data = await Reunion.find(
+      {
+          "$or":[
+              {rName:{$regex:req.params.rName}}
+            
+          ]
+      }
+  )
+  resp.send(data);
+}
