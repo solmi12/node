@@ -1,6 +1,6 @@
 const db = require("../models");
 var mongoClient = require ('mongodb').MongoClient; 
-const Reunion = db.reunion;
+const Reunion = db.reunion
 let express = require('express');
 let app = express();
 
@@ -47,10 +47,30 @@ exports.findAll = (req, res) => {
     .catch(err => {
       res.status(500).send({
         message:
-          err.message || "Some error occurred while retrieving tutorials."
+          err.message || "Some error occurred while retrieving reunions."
       });
     });
 };
+
+exports.findOnee = async (req,res) =>{
+
+  
+  let insertion = await Reunion.create({
+        
+    rName: req.body.rName,
+    suite: req.body.suite,
+   
+    createdAt: new Date()
+  });
+  let data = {};
+  if (insertion.acknowledged) {
+    // ... prepare the data
+    data = await reunions.findOne({_id: insertion.insertedId});
+  }
+  
+  
+  res.send(data);
+}
 // Find a single Tutorial with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
@@ -66,20 +86,7 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving Tutorial with id=" + id });
     });
 };
-exports.findOnee = (req, res) => {
-  const rName= req.params.rName;
-  Reunion.findByRName(rName)
-    .then(data => {
-      if (!data)
-        res.status(404).send({ message: "Not found Reunion with rName " + rName});
-      else res.send(data);
-    })
-    .catch(err => {
-      res
-        .status(500)
-        .send({ message: "Error retrieving Tutorial with id=" + rName });
-    });
-};
+
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({

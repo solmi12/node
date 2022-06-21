@@ -1,6 +1,6 @@
 module.exports = app => {
     const reunion = require("../controllers/reunion.controller");
-    const user = require("../controllers/user.controller");
+   
   
     var router = require("express").Router();
     // Create a new Tutorial
@@ -9,6 +9,7 @@ module.exports = app => {
     router.get("/", reunion.findAll);
   
     router.get("/:id", reunion.findOne);
+    router.get("/find/findonee", reunion.findOnee);
    
     // Update a Tutorial with id
     router.put("/:id", reunion.update);
@@ -18,6 +19,5 @@ module.exports = app => {
     router.delete("/", reunion.deleteAll);
   router.get("find/:rName", reunion.get);
     
-    router.get("/find/findall", user.findAll);
     app.use('/api/reunion', router);
   };

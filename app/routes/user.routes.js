@@ -1,7 +1,7 @@
 const { authJwt } = require("../middlewares");
 const controller = require("../controllers/user.controller");
 const { Router } = require("express");
-const { user } = require("../models");
+
 
 module.exports = function(app) {
 
@@ -28,5 +28,15 @@ module.exports = function(app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
   );
+  
+
  
 };
+module.exports = app => {
+  const user = require("../controllers/user.controller");
+  var router = require("express").Router();
+
+  router.get("/findall", user.findAll);
+
+  app.use('/api/user', router);
+}
