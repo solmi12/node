@@ -1,5 +1,5 @@
-const db = require("../models");
-var mongoClient = require ('mongodb').MongoClient; 
+
+const db = require("../models/index"); 
 const Reunion = db.reunion
 let express = require('express');
 let app = express();
@@ -8,6 +8,7 @@ let http = require('http');
 let server = http.Server(app);
 
 let socketIO = require('socket.io');
+
 let io = socketIO(server);
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
@@ -86,7 +87,6 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving Tutorial with id=" + id });
     });
 };
-
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
@@ -98,15 +98,11 @@ exports.update = (req, res) => {
     .then(data => {
       if (!data) {
         res.status(404).send({
-          message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`
+          message: `Cannot update Reunion with id=${id}. Maybe Reunion was not found!`
         });
-      } else res.send({ message: "Tutorial was updated successfully." });
+      } else res.send({ message: "Reunion was updated successfully." });
     })
-    .catch(err => {
-      res.status(500).send({
-        message: "Error updating Reunion with id=" + id
-      });
-    });
+  
 };
 // Delete a Tutorial with the specified id in the request
 exports.delete = (req, res) => {
