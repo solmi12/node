@@ -1,30 +1,25 @@
-
 const db = require("../models/index"); 
 const Reunion = db.reunion
 let express = require('express');
 let app = express();
 
-let http = require('http');
-let server = http.Server(app);
 
-let socketIO = require('socket.io');
 
-let io = socketIO(server);
-// Create and Save a new Tutorial
+
 exports.create = (req, res) => {
   // Validate request
   if (!req.body.rName) {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
   }
-  // Create a Tutorial
+  
   const reunion = new Reunion({
     
     rName: req.body.rName,
     suite: req.body.suite,
    
   });
-  // Save Tutorial in the database
+ 
   reunion
     .save(reunion)
     .then(data => {
@@ -37,7 +32,7 @@ exports.create = (req, res) => {
       });
     });
 };
-// Retrieve all Tutorials from the database.
+
 exports.findAll = (req, res) => {
   const rName = req.query.rName;
   var condition = rName ? { rName: { $regex: new RegExp(rName), $options: "i" } } : {};
@@ -72,7 +67,7 @@ exports.findOnee = async (req,res) =>{
   
   res.send(data);
 }
-// Find a single Tutorial with an id
+
 exports.findOne = (req, res) => {
   const id = req.params.id;
   Reunion.findById(id)
@@ -104,7 +99,6 @@ exports.update = (req, res) => {
     })
   
 };
-// Delete a Tutorial with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
   Reunion.findByIdAndRemove(id)
@@ -125,7 +119,6 @@ exports.delete = (req, res) => {
       });
     });
 };
-// Delete all Tutorials from the database.
 exports.deleteAll = (req, res) => {
   Reunion.deleteMany({})
     .then(data => {
